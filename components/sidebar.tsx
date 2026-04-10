@@ -53,9 +53,9 @@ export function Sidebar({ userEmail }: SidebarProps) {
   }
 
   return (
-    <aside className="w-[220px] shrink-0 h-screen sticky top-0 bg-nest-surface border-r border-[rgba(255,255,255,0.08)] flex flex-col">
+    <aside className="w-[220px] shrink-0 h-screen sticky top-0 flex flex-col" style={{ background: "#111113", borderRight: "1px solid rgba(255,255,255,0.05)" }}>
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-[rgba(255,255,255,0.08)]">
+      <div className="px-5 py-5 border-b border-[rgba(255,255,255,0.05)]">
         <div className="flex items-center gap-1.5">
           <span className="text-xl font-semibold tracking-tight text-nest-primary">nest</span>
           <div className="w-1.5 h-1.5 rounded-full bg-nest-accent mb-0.5" />
@@ -76,9 +76,10 @@ export function Sidebar({ userEmail }: SidebarProps) {
               href={item.href}
               className={`flex items-center gap-3 px-3 py-2 rounded-[8px] text-sm transition-all duration-150 ${
                 active
-                  ? "border-l-2 border-nest-accent bg-[rgba(221,92,40,0.08)] text-nest-primary pl-[10px]"
-                  : "text-nest-secondary hover:text-nest-primary hover:bg-[rgba(255,255,255,0.04)]"
+                  ? "text-nest-primary"
+                  : "text-nest-secondary hover:text-nest-primary"
               }`}
+              style={active ? { boxShadow: "var(--shadow-neuro-in)", background: "#0e0e0f" } : {}}
             >
               <Icon
                 className={`w-4 h-4 shrink-0 ${active ? "text-nest-accent" : "text-nest-muted"}`}

@@ -56,7 +56,7 @@ export default function TemplatePage() {
     if (!user) return;
     const payload = { plant_id: plantId, user_id: user.id, logo_url: logoPreview, frame_style: frameStyle, crop_mode: cropMode, trim_enabled: trimEnabled, updated_at: new Date().toISOString() };
     if (templateId) {
-      await supabase.from("content_templates").update(payload).eq("id", templateId);
+      await supabase.from("content_templates").update(payload).eq("id", templateId).eq("user_id", user.id);
     } else {
       const { data } = await supabase.from("content_templates").insert(payload).select().single();
       if (data) setTemplateId(data.id);

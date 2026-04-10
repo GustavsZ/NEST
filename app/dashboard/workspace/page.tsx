@@ -47,7 +47,7 @@ export default function WorkspacePage() {
     const payload = { user_id: user.id, name, legal_name: legalName || null };
 
     const { error } = workspaceId
-      ? await supabase.from("workspaces").update(payload).eq("id", workspaceId)
+      ? await supabase.from("workspaces").update(payload).eq("id", workspaceId).eq("user_id", user.id)
       : await supabase.from("workspaces").insert(payload).select().single();
 
     if (error) {

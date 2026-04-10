@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2, Camera } from "lucide-react";
 
-interface Device { id: string; name: string; }
+interface Device { id: string; name: string; content_type: string; video_length_seconds: number; }
 
 const VIDEO_LENGTHS = [5, 10, 15, 30];
 
@@ -25,21 +25,31 @@ export default function ConfigurePage() {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: devs } = await supabase.from("devices").select("id, name").eq("user_id", user.id).eq("type", "camera");
+      const { data: devs } = await supabase
+        .from("devices")
+        .select("id, name, content_type, video_length_seconds")
+        .eq("user_id", user.id)
+        .eq("type", "camera");
       setDevices(devs ?? []);
       if (devs && devs.length > 0) {
-        const firstId = devs[0].id;
-        setDeviceId(firstId);
-        const { data: config } = await supabase.from("camera_configs").select("*").eq("device_id", firstId).maybeSingle();
-        if (config) {
-          setContentType(config.content_type);
-          setVideoLength(config.video_length_seconds);
-        }
+        const first = devs[0];
+        setDeviceId(first.id);
+        setContentType((first.content_type as "photo" | "video") ?? "photo");
+        setVideoLength(first.video_length_seconds ?? 10);
       }
       setLoading(false);
     }
     load();
   }, []);
+
+  async function handleDeviceChange(id: string) {
+    setDeviceId(id);
+    const dev = devices.find((d) => d.id === id);
+    if (dev) {
+      setContentType((dev.content_type as "photo" | "video") ?? "photo");
+      setVideoLength(dev.video_length_seconds ?? 10);
+    }
+  }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -48,13 +58,11 @@ export default function ConfigurePage() {
     const supabase = createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const payload = { device_id: deviceId, user_id: user.id, content_type: contentType, video_length_seconds: videoLength };
-    const { data: existing } = await supabase.from("camera_configs").select("id").eq("device_id", deviceId).maybeSingle();
-    if (existing) {
-      await supabase.from("camera_configs").update(payload).eq("id", existing.id);
-    } else {
-      await supabase.from("camera_configs").insert(payload);
-    }
+    await supabase
+      .from("devices")
+      .update({ content_type: contentType, video_length_seconds: videoLength })
+      .eq("id", deviceId)
+      .eq("user_id", user.id);
     setSaved(true);
     setSaving(false);
     setTimeout(() => setSaved(false), 3000);
@@ -87,7 +95,7 @@ export default function ConfigurePage() {
               {devices.length > 1 && (
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-medium uppercase tracking-widest text-nest-muted">Camera</label>
-                  <Select value={deviceId} onValueChange={(val) => setDeviceId(val ?? "")}>
+                  <Select value={deviceId} onValueChange={(val) => handleDeviceChange(val ?? "")}>
                     <SelectTrigger className="bg-nest-surface-2 border-[rgba(255,255,255,0.14)] text-nest-primary rounded-[10px] h-10 text-sm">
                       <SelectValue />
                     </SelectTrigger>
@@ -102,7 +110,7 @@ export default function ConfigurePage() {
 
               <div className="space-y-2">
                 <label className="text-[10px] font-medium uppercase tracking-widest text-nest-muted">What are you capturing?</label>
-                <p className="text-xs text-nest-muted">You can change this later from your device settings.</p>
+                <p className="text-xs text-nest-muted">You can change this later.</p>
                 <div className="grid grid-cols-2 gap-3 mt-1">
                   {(["photo", "video"] as const).map((type) => (
                     <button
@@ -159,7 +167,6 @@ export default function ConfigurePage() {
         </Card>
       )}
 
-      {/* Test shot placeholder */}
       <Card className="bg-nest-surface border border-[rgba(255,255,255,0.08)] rounded-[14px]">
         <CardContent className="px-6 py-5">
           <div className="flex items-start gap-3">

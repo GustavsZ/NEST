@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, Circle, ArrowRight } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+import { CheckCircle2, ArrowRight, Sparkles } from "lucide-react";
 
 export interface OnboardingStep {
   id: string;
@@ -13,94 +11,130 @@ export interface OnboardingStep {
   done: boolean;
 }
 
-interface OnboardingChecklistProps {
+interface Props {
   steps: OnboardingStep[];
   userEmail: string;
 }
 
-export function OnboardingChecklist({ steps, userEmail }: OnboardingChecklistProps) {
+export function OnboardingChecklist({ steps, userEmail }: Props) {
   const completedCount = steps.filter((s) => s.done).length;
   const totalCount = steps.length;
-  const progressPct = Math.round((completedCount / totalCount) * 100);
   const allDone = completedCount === totalCount;
   const nextStep = steps.find((s) => !s.done);
+  const progressPct = Math.round((completedCount / totalCount) * 100);
 
   if (allDone) {
     return (
-      <div className="rounded-[14px] bg-nest-surface border border-[rgba(255,255,255,0.08)] p-6">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-8 h-8 rounded-full bg-[rgba(61,186,126,0.12)] flex items-center justify-center">
-            <CheckCircle2 className="w-4 h-4 text-nest-success" />
-          </div>
-          <h2 className="text-lg font-medium text-nest-primary">You&apos;re live.</h2>
+      <div
+        className="rounded-[16px] p-6 flex items-center gap-4"
+        style={{ boxShadow: "var(--shadow-neuro-out)", background: "#161618" }}
+      >
+        <div className="w-10 h-10 rounded-full bg-[rgba(61,186,126,0.12)] flex items-center justify-center shrink-0">
+          <Sparkles className="w-5 h-5 text-nest-success" />
         </div>
-        <p className="text-sm text-nest-secondary">
-          Everything is set up. Your system is capturing and ready to deliver to guests.
-        </p>
+        <div>
+          <p className="text-sm font-medium text-nest-primary">You&apos;re live!</p>
+          <p className="text-xs text-nest-secondary mt-0.5">
+            All systems are set up. Your first guests can now capture and purchase their memories.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-[14px] bg-nest-surface border border-[rgba(255,255,255,0.08)] p-6">
+    <div
+      className="rounded-[16px] p-6"
+      style={{ boxShadow: "var(--shadow-neuro-out)", background: "#161618" }}
+    >
       {/* Header */}
       <div className="flex items-start justify-between mb-5">
         <div>
-          <h2 className="text-lg font-medium text-nest-primary">
-            Let&apos;s get {userEmail.split("@")[0]}&apos;s system live.
-          </h2>
-          <p className="text-sm text-nest-secondary mt-1">
+          <p className="text-[10px] font-medium uppercase tracking-widest text-nest-muted mb-1">Setup progress</p>
+          <h2 className="text-sm font-medium text-nest-primary">
             {completedCount} of {totalCount} steps complete
-          </p>
+          </h2>
         </div>
         {nextStep && (
-          <Link href={nextStep.href} className="inline-flex items-center justify-center h-8 px-3 text-xs font-medium bg-nest-accent hover:bg-nest-accent/90 text-white rounded-[10px] transition-colors shrink-0">
-            Continue <ArrowRight className="w-3 h-3 ml-1" />
+          <Link
+            href={nextStep.href}
+            className="inline-flex items-center gap-1.5 h-8 px-3 text-xs font-medium bg-nest-accent hover:bg-nest-accent/90 text-white rounded-[8px] transition-colors shrink-0"
+          >
+            Continue <ArrowRight className="w-3 h-3" />
           </Link>
         )}
       </div>
 
       {/* Progress bar */}
-      <Progress
-        value={progressPct}
-        className="h-1.5 bg-nest-surface-2 mb-6 [&>div]:bg-nest-accent"
-      />
-
-      {/* Steps */}
-      <div className="space-y-1">
-        {steps.map((step, index) => (
+      <div className="mb-6">
+        <div
+          className="h-1 rounded-full overflow-hidden"
+          style={{ boxShadow: "var(--shadow-neuro-in)", background: "#111113" }}
+        >
           <div
-            key={step.id}
-            className={`flex items-start gap-4 p-3 rounded-[10px] transition-colors duration-150 ${
-              step.done
-                ? "opacity-60"
-                : index === steps.findIndex((s) => !s.done)
-                ? "bg-[rgba(221,92,40,0.06)] border border-[rgba(221,92,40,0.15)]"
-                : "opacity-50"
-            }`}
-          >
-            {step.done ? (
-              <CheckCircle2 className="w-4 h-4 text-nest-success mt-0.5 shrink-0" />
-            ) : (
-              <Circle className="w-4 h-4 text-nest-muted mt-0.5 shrink-0" />
-            )}
-            <div className="flex-1 min-w-0">
-              <p className={`text-sm font-medium ${step.done ? "text-nest-secondary" : "text-nest-primary"}`}>
-                {step.label}
-              </p>
-              <p className="text-xs text-nest-muted mt-0.5">{step.description}</p>
-            </div>
-            {!step.done && index === steps.findIndex((s) => !s.done) && (
-              <Link
-                href={step.href}
-                className="text-[11px] text-nest-accent hover:underline shrink-0 mt-0.5"
-              >
-                Set up
-              </Link>
-            )}
-          </div>
-        ))}
+            className="h-full bg-nest-accent rounded-full transition-all duration-500"
+            style={{ width: `${progressPct}%` }}
+          />
+        </div>
       </div>
+
+      {/* Steps — horizontal circles */}
+      <div className="flex items-start gap-0">
+        {steps.map((step, i) => {
+          const isActive = !step.done && (i === 0 || steps[i - 1].done);
+          const isDone = step.done;
+          return (
+            <div key={step.id} className="flex-1 flex flex-col items-center relative">
+              {/* Connector line */}
+              {i < steps.length - 1 && (
+                <div
+                  className="absolute top-[14px] left-[50%] w-full h-px"
+                  style={{
+                    background: isDone ? "rgba(221,92,40,0.4)" : "rgba(255,255,255,0.06)",
+                  }}
+                />
+              )}
+              {/* Circle */}
+              <Link href={step.href} className="relative z-10 flex flex-col items-center group">
+                <div
+                  className={`w-7 h-7 rounded-full flex items-center justify-center transition-all duration-200 ${
+                    isDone
+                      ? "bg-nest-accent"
+                      : isActive
+                      ? "bg-[rgba(221,92,40,0.12)] border border-nest-accent"
+                      : "bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.1)]"
+                  }`}
+                  style={isDone || isActive ? {} : { boxShadow: "var(--shadow-neuro-sm)" }}
+                >
+                  {isDone ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                  ) : (
+                    <span className={`text-[10px] font-medium ${isActive ? "text-nest-accent" : "text-nest-muted"}`}>
+                      {i + 1}
+                    </span>
+                  )}
+                </div>
+                <p
+                  className={`text-[10px] text-center mt-2 leading-tight max-w-[64px] ${
+                    isDone ? "text-nest-secondary" : isActive ? "text-nest-primary font-medium" : "text-nest-muted"
+                  }`}
+                >
+                  {step.label}
+                </p>
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Active step description */}
+      {nextStep && (
+        <div className="mt-5 pt-4 border-t border-[rgba(255,255,255,0.06)]">
+          <p className="text-xs text-nest-secondary">
+            <span className="text-nest-primary font-medium">Next:</span> {nextStep.description}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

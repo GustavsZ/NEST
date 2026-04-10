@@ -43,7 +43,7 @@ export default function SalesPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     if (configId) {
-      await supabase.from("sales_config").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", configId);
+      await supabase.from("sales_config").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", configId).eq("user_id", user.id);
     } else {
       const { data } = await supabase.from("sales_config").insert({ plant_id: plantId, user_id: user.id, ...patch }).select().single();
       if (data) setConfigId(data.id);
